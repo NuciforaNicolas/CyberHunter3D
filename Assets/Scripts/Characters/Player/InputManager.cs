@@ -7,6 +7,7 @@ namespace Characters.Player
 {
     public class InputManager : MonoBehaviour
     {
+        // Player infos
         [SerializeField] float moveSpeed, rotationSpeed, jumpHeight, gravity;
         [SerializeField] bool isGrounded;
         [SerializeField] Vector3 velocity;
@@ -18,6 +19,8 @@ namespace Characters.Player
 
         // Particle system
         [SerializeField] ParticleSystem particleSystem;
+        [SerializeField] float rateFrom, rateTo, timeToChargedShoot;
+        [SerializeField] bool chargedShootReady;
 
         // Input system variables
         Vector2 inputMove; // Input system use a 2d vector where z = y -> (x, y) = (x, 0, y)
@@ -44,10 +47,11 @@ namespace Characters.Player
             controller.Player.NormalShoot.performed += ctx => NormalShoot();
             controller.Player.NormalShoot.canceled += ctx => StopNormalShooting();
 
-            controller.Player.ChargedShoot.performed += ctx => StartChargedShoot(ctx);
+            controller.Player.ChargedShoot.performed += ctx => StartCoroutine("StartChargedShootCR");
             controller.Player.ChargedShoot.canceled += ctx => ChargedShoot();
 
             // TO-DO: shooting and others
+            chargedShootReady = false;
         }
 
         // Update is called once per frame
@@ -116,16 +120,38 @@ namespace Characters.Player
             anim.SetBool("isShooting", false);
         }
 
-        void StartChargedShoot(InputAction.CallbackContext ctx)
+        IEnumerator StartChargedShootCR()
         {
-            Debug.Log("Context: " + ctx);
+            Debug.Log("Starting charged shoot");
             particleSystem.Play();
+            var t = 0f;
+            while(t < timeToChargedShoot)
+            {
+                t += Time.deltaTime;
+                var emission = particleSystem.emission;
+                emission.rateOverTime = Mathf.Lerp(rateFrom, rateTo, t / timeToChargedShoot);
+                Debug.Log("Charging: " + t);
+                yield return null;
+            }
+
+            if(t >= timeToChargedShoot)
+                chargedShootReady = true;
         }
 
         void ChargedShoot()
         {
+            Debug.Log("Charged Shoot: " + chargedShootReady);
+            if(chargedShootReady)
+            {
+                GunManager.instance.ChargedShoot();
+            }
+            else
+            {
+                Debug.Log("Stop charging");
+                StopCoroutine("StartChargedShootCR");
+            }
             particleSystem.Stop();
-            GunManager.instance.ChargedShoot();
+            chargedShootReady = false;
         }
 
         private void OnEnable()

@@ -8,18 +8,18 @@ namespace Characters.Player
     public class InputManager : MonoBehaviour
     {
         // Player infos
-        [SerializeField] float moveSpeed, rotationSpeed, jumpHeight, gravity;
-        [SerializeField] bool isGrounded;
+        [SerializeField] float moveSpeed, rotationSpeed, dashSpeed, dashDuration, timeToDash, jumpHeight, gravity;
+        [SerializeField] bool isGrounded, canDash;
         [SerializeField] Vector3 velocity;
         
-        //PlayerInput playerInput; // Input system actions
+        PlayerInput playerInput; // Input system actions
         [SerializeField] InputController controller; // For input system
         CharacterController characterController; // used to move player
         Animator anim;
 
         // Particle system
-        [SerializeField] ParticleSystem particleSystem;
-        [SerializeField] float rateFrom, rateTo, timeToChargedShoot;
+        [SerializeField] ParticleSystem charghingPS, fullChargePS, dashPS;
+        [SerializeField] float chargeRateFrom, chargeRateTo, timeToChargedShoot;
         [SerializeField] bool chargedShootReady;
 
         // Input system variables
@@ -50,8 +50,11 @@ namespace Characters.Player
             controller.Player.ChargedShoot.performed += ctx => StartCoroutine("StartChargedShootCR");
             controller.Player.ChargedShoot.canceled += ctx => ChargedShoot();
 
+            controller.Player.Dash.performed += ctx => Dash();
+
             // TO-DO: shooting and others
             chargedShootReady = false;
+            canDash = true;
         }
 
         // Update is called once per frame
@@ -123,19 +126,24 @@ namespace Characters.Player
         IEnumerator StartChargedShootCR()
         {
             Debug.Log("Starting charged shoot");
-            particleSystem.Play();
+            charghingPS.Play();
             var t = 0f;
             while(t < timeToChargedShoot)
             {
                 t += Time.deltaTime;
-                var emission = particleSystem.emission;
-                emission.rateOverTime = Mathf.Lerp(rateFrom, rateTo, t / timeToChargedShoot);
+                var emission = charghingPS.emission;
+                emission.rateOverTime = Mathf.Lerp(chargeRateFrom, chargeRateTo, t / timeToChargedShoot);
                 Debug.Log("Charging: " + t);
                 yield return null;
             }
 
             if(t >= timeToChargedShoot)
+            {
                 chargedShootReady = true;
+                //charghingPS.Stop();
+                fullChargePS.Play();
+            }
+                
         }
 
         void ChargedShoot()
@@ -143,15 +151,52 @@ namespace Characters.Player
             Debug.Log("Charged Shoot: " + chargedShootReady);
             if(chargedShootReady)
             {
+                fullChargePS.Stop();
                 GunManager.instance.ChargedShoot();
             }
             else
             {
                 Debug.Log("Stop charging");
                 StopCoroutine("StartChargedShootCR");
+                NormalShoot();
             }
-            particleSystem.Stop();
+            charghingPS.Stop();
             chargedShootReady = false;
+        }
+
+        void Dash()
+        {
+            StartCoroutine("DashCR");
+        }
+
+        IEnumerator DashCR()
+        {
+            dashPS.Play();
+            canDash = false;
+            float t = 0f;
+            float dir = transform.forward.z > 0 ? 1 : -1;
+            while (t < dashDuration)
+            {
+                t += Time.deltaTime;
+                velocity.z = dashSpeed * dir;
+                yield return null;
+            }
+            dashPS.Stop();
+
+            t = 0f;
+            float finalVel = velocity.z;
+            while (t < dashDuration)
+            {
+                Debug.Log("t: " + t + "; vel.z: " + velocity.z + "; finalvel: " + finalVel);
+                var lerpTime = t / dashDuration;
+                velocity.z = Mathf.Lerp(finalVel, 0, lerpTime);
+                t += Time.deltaTime;
+                yield return null;
+            }
+            velocity.z = 0;
+            
+            yield return new WaitForSeconds(timeToDash);
+            canDash = true;
         }
 
         private void OnEnable()

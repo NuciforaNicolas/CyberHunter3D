@@ -34,7 +34,6 @@ namespace Managers
 
         public GameObject GetObjectFromPool(Pool pool)
         {
-            var tentative = 1;
             var objectFound = false;
             var index = 0;
             while(!objectFound)
@@ -56,16 +55,6 @@ namespace Managers
                 {
                     pool.mLastIndex = 0;
                 }
-                if (tentative == maxTentatives)
-                {
-                    GameObject go = Instantiate<GameObject>(pool.mPrefab, Vector3.zero, Quaternion.identity);
-                    go.SetActive(false);
-                    pool.mList.Add(go);
-                    //index++;
-                    break;
-                }
-                
-                tentative++;
             }
             return pool.mList[index];
         }

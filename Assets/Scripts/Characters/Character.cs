@@ -7,7 +7,7 @@ namespace Characters
     public class Character : MonoBehaviour
     {
         [SerializeField]
-        protected float moveSpeed, rotationSpeed, jumpHeight, jumpMultiplier, gravity, normalGravityMultiplier, gravityMultiplier;
+        protected float moveSpeed, rotationSpeed, jumpSpeed, jumpMultiplier, gravity, gravityMultiplier;
         [SerializeField]
         public bool isGrounded { get; set; }
         [SerializeField]

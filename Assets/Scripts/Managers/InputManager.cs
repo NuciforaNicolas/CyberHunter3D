@@ -7,15 +7,13 @@ namespace Characters.Player
 {
     public class InputManager : MonoBehaviour
     {
-        PlayerInput playerInput; // Input system actions
-        [SerializeField] InputController controller; // For input system
+        InputController controller; // For input system
 
         [SerializeField] Player player;
 
         // Start is called before the first frame update
         void Awake()
         {
-            playerInput = GetComponent<PlayerInput>();
             controller = new InputController();
 
             // Setting Input system actions

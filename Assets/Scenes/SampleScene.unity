@@ -8035,14 +8035,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   rotationSpeed: 700
-  jumpHeight: 3.5
+  jumpSpeed: 3.5
   jumpMultiplier: 1
   gravity: 20
-  normalGravityMultiplier: 1
   gravityMultiplier: 1
   dashSpeed: 8
   dashDuration: 0.2
-  timeToDash: 1
   wallJumpSpeed: 3
   wallSlideSpeed: 3
   timeToEnableInput: 0.2

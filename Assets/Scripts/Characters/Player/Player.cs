@@ -56,7 +56,7 @@ namespace Characters.Player
             if (inputEnabled)
             {
                 var inputDir = new Vector3(0, 0, inputDirection.x > 0 ? 1 : inputDirection.x < 0 ? -1 : 0);
-                moveDir = inputDir * moveSpeed * Time.deltaTime;
+                var moveDir = inputDir * moveSpeed * Time.deltaTime;
                 characterController.Move(moveDir);
 
                 if (inputDir != Vector3.zero)
@@ -81,7 +81,6 @@ namespace Characters.Player
 
         void ApplyGravity()
         {
-            gravityMultiplier = normalGravityMultiplier;
             // Let the player go down for gravity
             velocity.y -= gravity * gravityMultiplier * Time.deltaTime;
             characterController.Move(velocity * Time.deltaTime);
@@ -111,7 +110,7 @@ namespace Characters.Player
         public void Jump()
         {
             canJump = false;
-            velocity.y = Mathf.Sqrt(jumpHeight * jumpMultiplier * gravity);
+            velocity.y = Mathf.Sqrt(jumpSpeed * jumpMultiplier * gravity);
             if (anim != null)
             {
                 anim.SetBool("isJumping", true);

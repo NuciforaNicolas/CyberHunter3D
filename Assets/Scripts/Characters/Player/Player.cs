@@ -1,23 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Characters.Player
 {
-    public class InputManager : MonoBehaviour
+    public class Player : Character
     {
         // Player infos
-        [SerializeField] float moveSpeed, rotationSpeed, dashSpeed, dashDuration, timeToDash, jumpHeight, jumpMultiplier, wallJumpSpeed, wallSlideSpeed, gravity, normalGravityMultiplier, gravityMultiplier;
+        [SerializeField] float dashSpeed, dashDuration, wallJumpSpeed, wallSlideSpeed;
         [SerializeField] float timeToEnableInput;
-        [SerializeField] bool isGrounded, canDash, isContactingWall, inputEnabled, canJump, canDoubleJump;
-        [SerializeField] Vector3 velocity, moveDir;
-        float wallNormal;
-
-        PlayerInput playerInput; // Input system actions
-        [SerializeField] InputController controller; // For input system
-        CharacterController characterController; // used to move player
-        Animator anim;
+        public bool canDash { get; private set; } 
+        public bool isContactingWall { get; private set; } 
+        public bool inputEnabled { get; private set; } 
+        public bool canDoubleJump { get; private set; }
+        
+        public float wallNormal { get; private set; }
 
         // Particle system
         [SerializeField] ParticleSystem charghingPS, fullChargePS, dashPS;
@@ -25,95 +22,38 @@ namespace Characters.Player
         bool chargedShootReady;
 
         // Input system variables
-        Vector2 inputDirection; // Input system use a 2d vector where z = y -> (x, y) = (x, 0, y)
+        public Vector2 inputDirection { get; set; } // Input system use a 2d vector where z = y -> (x, y) = (x, 0, y)
 
-        static public InputManager instance;
-
-        // Start is called before the first frame update
-        void Awake()
+        private void Awake()
         {
-            instance = this;
-
-            playerInput = GetComponent<PlayerInput>();
-            controller = new InputController();
-            characterController = GetComponent<CharacterController>();
-            anim = GetComponent<Animator>();
-
-            // Setting Input system actions
-            controller.Player.Move.performed += ctx => inputDirection = ctx.ReadValue<Vector2>();
-            controller.Player.Move.canceled += ctx => inputDirection = Vector2.zero;
-
-            controller.Player.Jump.performed += ctx => {
-                if (isGrounded && canJump && !isContactingWall)
-                    Jump();
-                else if (!isGrounded && canDoubleJump && !isContactingWall)
-                    DoubleJump();
-                else if(isContactingWall)
-                {
-                    StartCoroutine("WallJump", wallNormal);
-                }
-            };
-
-            controller.Player.NormalShoot.performed += ctx => NormalShoot();
-            controller.Player.NormalShoot.canceled += ctx => StopNormalShooting();
-
-            controller.Player.ChargedShoot.performed += ctx => StartCoroutine("StartChargedShootCR");
-            controller.Player.ChargedShoot.canceled += ctx => ChargedShoot();
-
-            controller.Player.Dash.performed += ctx => { if (isGrounded && canDash) Dash(); };
-
-            // TO-DO: shooting and others
-            chargedShootReady = false;
-            canDash = true;
-            canJump = true;
+            base.Awake();
             canDoubleJump = true;
             inputEnabled = true;
+            chargedShootReady = false;
+            canDash = true;
         }
 
-        // Update is called once per frame
         void Update()
         {
-            
+
             CheckIfGrounded();
 
             if (characterController.collisionFlags == CollisionFlags.None)
             {
                 isContactingWall = false;
             }
-                
+
             Move();
 
             if (isContactingWall)
                 WallSlide();
             else
-                ApplayGravity();
-        }
-
-        void ApplayGravity()
-        {
-            //if(isContactingWall && velocity.y < 0)
-            //{
-            //    gravityMultiplier = wallSlideSpeed;
-            //}
-            //else
-            //{
-            //    gravityMultiplier = normalGravityMultiplier;
-            //}
-
-            gravityMultiplier = normalGravityMultiplier;
-            // Let the player go down for gravity
-            velocity.y -= gravity * gravityMultiplier * Time.deltaTime;
-            characterController.Move(velocity * Time.deltaTime);
-        }
-
-        void WallSlide()
-        {
-            characterController.Move(-Vector3.up * wallSlideSpeed * Time.deltaTime);
+                ApplyGravity();
         }
 
         void Move()
         {
-            if(inputEnabled)
+            if (inputEnabled)
             {
                 var inputDir = new Vector3(0, 0, inputDirection.x > 0 ? 1 : inputDirection.x < 0 ? -1 : 0);
                 moveDir = inputDir * moveSpeed * Time.deltaTime;
@@ -139,6 +79,19 @@ namespace Characters.Player
             }
         }
 
+        void ApplyGravity()
+        {
+            gravityMultiplier = normalGravityMultiplier;
+            // Let the player go down for gravity
+            velocity.y -= gravity * gravityMultiplier * Time.deltaTime;
+            characterController.Move(velocity * Time.deltaTime);
+        }
+
+        void WallSlide()
+        {
+            characterController.Move(-Vector3.up * wallSlideSpeed * Time.deltaTime);
+        }
+
         void CheckIfGrounded()
         {
             // Simulate gravity on player
@@ -148,14 +101,14 @@ namespace Characters.Player
                 isContactingWall = false;
                 canJump = true;
                 canDoubleJump = true;
-                if(velocity.y < 0)
+                if (velocity.y < 0)
                     velocity.y = 0;
-                if(anim != null)
+                if (anim != null)
                     anim.SetBool("isJumping", false);
             }
         }
 
-        void Jump()
+        public void Jump()
         {
             canJump = false;
             velocity.y = Mathf.Sqrt(jumpHeight * jumpMultiplier * gravity);
@@ -166,31 +119,30 @@ namespace Characters.Player
             }
         }
 
-        void DoubleJump()
+        public void DoubleJump()
         {
             canDoubleJump = false;
             Jump();
         }
 
-        void NormalShoot()
+        public void NormalShoot()
         {
             // TODO: cambiare nome bool con "isNormalShooting"
-            if(anim != null)
+            if (anim != null)
                 anim.SetBool("isShooting", true);
             GunManager.instance.NormalShoot();
         }
 
-        void StopNormalShooting()
+        public void StartChargedShoot()
         {
-            if(anim != null)
-                anim.SetBool("isShooting", false);
+            StartCoroutine("StartChargedShootCR");
         }
 
         IEnumerator StartChargedShootCR()
         {
             charghingPS.Play();
             var t = 0f;
-            while(t < timeToChargedShoot)
+            while (t < timeToChargedShoot)
             {
                 t += Time.deltaTime;
                 var emission = charghingPS.emission;
@@ -198,18 +150,18 @@ namespace Characters.Player
                 yield return null;
             }
 
-            if(t >= timeToChargedShoot)
+            if (t >= timeToChargedShoot)
             {
                 chargedShootReady = true;
                 //charghingPS.Stop();
                 fullChargePS.Play();
             }
-                
+
         }
 
-        void ChargedShoot()
+        public void ChargedShoot()
         {
-            if(chargedShootReady)
+            if (chargedShootReady)
             {
                 fullChargePS.Stop();
                 GunManager.instance.ChargedShoot();
@@ -223,7 +175,7 @@ namespace Characters.Player
             chargedShootReady = false;
         }
 
-        void Dash()
+        public void Dash()
         {
             StartCoroutine("DashCR");
         }
@@ -250,7 +202,7 @@ namespace Characters.Player
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            if(!isGrounded && hit.normal.y < 0.1f)
+            if (!isGrounded && hit.normal.y < 0.1f)
             {
                 isContactingWall = true;
                 wallNormal = hit.normal.z;
@@ -262,7 +214,12 @@ namespace Characters.Player
             }
         }
 
-        IEnumerator WallJump(float hitNormal)
+        public void WallJump()
+        {
+            StartCoroutine("WallJumpCR", wallNormal);
+        }
+
+        IEnumerator WallJumpCR(float hitNormal)
         {
             Debug.Log("Walljump");
             inputEnabled = false;
@@ -273,17 +230,5 @@ namespace Characters.Player
             inputEnabled = true;
             velocity.z = 0;
         }
-
-        private void OnEnable()
-        {
-            controller.Enable();
-        }
-
-        private void OnDisable()
-        {
-            controller.Disable();
-        }
-
     }
-
 }

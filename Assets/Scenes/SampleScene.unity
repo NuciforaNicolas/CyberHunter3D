@@ -6583,7 +6583,7 @@ GameObject:
   - component: {fileID: 1003723171}
   - component: {fileID: 1003723172}
   - component: {fileID: 994274502}
-  - component: {fileID: 994274503}
+  - component: {fileID: 1003723173}
   - component: {fileID: 994274504}
   m_Layer: 0
   m_Name: Hunter
@@ -6646,45 +6646,6 @@ MonoBehaviour:
   timeNextShoot: 0.1
   canShoot: 0
   bulletSpawn: {fileID: 2067279746}
---- !u!114 &994274503
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 994241521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60e35cb831838ad4d8036f603188cbdf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 6
-  rotationSpeed: 700
-  dashSpeed: 12
-  dashDuration: 0.2
-  timeToDash: 1
-  jumpHeight: 4
-  jumpMultiplier: 1
-  wallJumpSpeed: 3.5
-  wallSlideSpeed: 3
-  gravity: 20
-  normalGravityMultiplier: 1
-  gravityMultiplier: 0
-  timeToEnableInput: 0.2
-  isGrounded: 0
-  canDash: 0
-  isContactingWall: 0
-  inputEnabled: 0
-  canJump: 0
-  canDoubleJump: 0
-  velocity: {x: 0, y: 0, z: 0}
-  moveDir: {x: 0, y: 0, z: 0}
-  charghingPS: {fileID: 1981129943}
-  fullChargePS: {fileID: 663528907}
-  dashPS: {fileID: 1428991263}
-  chargeRateFrom: 0
-  chargeRateTo: 30
-  timeToChargedShoot: 1.2
 --- !u!114 &994274504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8060,6 +8021,37 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &1003723173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 994241521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6037383fc1c7ef24885dbc7e13fa264b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
+  rotationSpeed: 700
+  jumpHeight: 3.5
+  jumpMultiplier: 1
+  gravity: 20
+  normalGravityMultiplier: 1
+  gravityMultiplier: 1
+  dashSpeed: 8
+  dashDuration: 0.2
+  timeToDash: 1
+  wallJumpSpeed: 3
+  wallSlideSpeed: 3
+  timeToEnableInput: 0.2
+  charghingPS: {fileID: 1981129943}
+  fullChargePS: {fileID: 663528907}
+  dashPS: {fileID: 1428991263}
+  chargeRateFrom: 10
+  chargeRateTo: 50
+  timeToChargedShoot: 1
 --- !u!1 &1275889084
 GameObject:
   m_ObjectHideFlags: 0
@@ -18308,9 +18300,55 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1492923861}
+  - {fileID: 2029113523}
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2029113522
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2029113523}
+  - component: {fileID: 2029113524}
+  m_Layer: 0
+  m_Name: InputManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2029113523
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2029113522}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2009031604}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2029113524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2029113522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60e35cb831838ad4d8036f603188cbdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1003723173}
 --- !u!1 &2067279745
 GameObject:
   m_ObjectHideFlags: 0

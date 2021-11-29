@@ -7,22 +7,34 @@ namespace Characters.Player
     public class Player : Character
     {
         // Player infos
-        [SerializeField] float dashSpeed, dashDuration, wallJumpSpeed, wallSlideSpeed;
+        [Header("Player attributes")]
+        [Header("Jump - dash")]
+        [SerializeField] float dashSpeed;
+        [SerializeField] float dashDuration; 
+        [SerializeField] float wallJumpSpeed; 
+        [SerializeField] float wallSlideSpeed;
         [SerializeField] float timeToEnableInput;
+        [Header("Particles System")]
+        // Particle system
+        [SerializeField] ParticleSystem charghingPS;
+        [SerializeField] ParticleSystem fullChargePS;
+        [SerializeField] ParticleSystem dashPS;
+        [SerializeField] float chargeRateFrom;
+        [SerializeField] float chargeRateTo;
+        [SerializeField] float timeToChargedShoot;
+
+        // Booleans
         public bool canDash { get; private set; } 
         public bool isContactingWall { get; private set; } 
         public bool inputEnabled { get; private set; } 
         public bool canDoubleJump { get; private set; }
-        
-        public float wallNormal { get; private set; }
-
-        // Particle system
-        [SerializeField] ParticleSystem charghingPS, fullChargePS, dashPS;
-        [SerializeField] float chargeRateFrom, chargeRateTo, timeToChargedShoot;
         bool chargedShootReady;
-
+        public float wallNormal { get; private set; }
         // Input system variables
         public Vector2 inputDirection { get; set; } // Input system use a 2d vector where z = y -> (x, y) = (x, 0, y)
+
+        public delegate void OnUpgradeHealth();
+        public event OnUpgradeHealth onUpgradeHealth;
 
         private void Awake()
         {
@@ -137,6 +149,12 @@ namespace Characters.Player
             StartCoroutine("StartChargedShootCR");
         }
 
+        public void StopNormalShooting()
+        {
+            if (anim != null)
+                anim.SetBool("isShooting", false);
+        }
+
         IEnumerator StartChargedShootCR()
         {
             charghingPS.Play();
@@ -228,6 +246,22 @@ namespace Characters.Player
             yield return new WaitForSeconds(timeToEnableInput);
             inputEnabled = true;
             velocity.z = 0;
+        }
+
+        public void Heal(float amount)
+        {
+            //if (health <= 0) return;
+            health = ((health + amount) < maxHealth) ? health + amount : maxHealth;
+            var fillAmount = health / maxHealth;
+            healthBar.fillAmount = fillAmount;
+            healthBar.color = Color.Lerp(greenHealthColor, redHealthColor, 1 - fillAmount);
+        }
+
+        public void UpgradeHealth(float amount)
+        {
+            maxHealth += amount;
+            health = maxHealth;
+            onUpgradeHealth?.Invoke();
         }
     }
 }
